@@ -1,0 +1,27 @@
+tasks:
+  - init: |
+      sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+      export PATH="/home/gitpod/.local/share/solana/install/active_release/bin:$PATH"
+      eval $(gp env -e PATH=$HOME/.local/share/solana/install/active_release/bin:$PATH)
+      npm install
+      npm run build:program
+    command: |
+      solana-keygen new --no-bip39-passphrase -o keypair.json
+      solana config set --keypair keypair.json
+      solana config set --url localhost
+github:
+  prebuilds:
+    master: true
+    branches: false
+    pullRequests: true
+    addCheck: true
+    addComment: true
+ports:
+  - port: 1024
+    onOpen: ignore
+  - port: 8899
+    onOpen: ignore
+  - port: 8900
+    onOpen: ignore
+  - port: 9900
+    onOpen: ignore
