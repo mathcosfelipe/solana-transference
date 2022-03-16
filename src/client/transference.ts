@@ -195,6 +195,7 @@ export async function transfer(): Promise<void> {
   /**
    * Report the number of times the greeted account has been said hello to
    */
+// Report the number of times the greeted account has been said hello to.
 export async function reportGreetings(): Promise<void> {
   const accountInfo = await connection.getAccountInfo(greetedPubkey);
   if (accountInfo === null) {
