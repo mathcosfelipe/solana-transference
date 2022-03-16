@@ -64,22 +64,22 @@ export async function establishConnection(): Promise<void> {
   
 // Establish an account to pay for everything.
 export async function establishPayer(): Promise<void> {
+  
   let fees = 0;
+  
   if (!payer) {
     const {feeCalculator} = await connection.getRecentBlockhash();
-
-    // Calculate the cost to fund the greeter account
+    // Calculate the cost to fund the greeter account.
     fees += await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
-
-    // Calculate the cost of sending transactions
-    fees += feeCalculator.lamportsPerSignature * 100; // wag
-
+    // Calculate the cost of sending transactions.
+    fees += feeCalculator.lamportsPerSignature * 100;
     payer = await getPayer();
   }
 
   let lamports = await connection.getBalance(payer.publicKey);
+
   if (lamports < fees) {
-    // If current balance is not enough to pay for fees, request an airdrop
+    // If current balance is not enough to pay for fees, request an airdrop.
     const sig = await connection.requestAirdrop(
       payer.publicKey,
       fees - lamports,
@@ -95,76 +95,85 @@ export async function establishPayer(): Promise<void> {
     lamports / LAMPORTS_PER_SOL,
     'SOL to pay for fees',
   );
+
 }
   
-  /**
-   * Check if the hello world BPF program has been deployed
-   */
-  export async function checkProgram(): Promise<void> {
-    // Read program id from keypair file
-    try {
-      const programKeypair = await createKeypairFromFile(PROGRAM_KEYPAIR_PATH);
-      programId = programKeypair.publicKey;
-    } catch (err) {
-      const errMsg = (err as Error).message;
-      throw new Error(
-        `Failed to read program keypair at '${PROGRAM_KEYPAIR_PATH}' due to error: ${errMsg}. Program may need to be deployed with \`solana program deploy dist/program/helloworld.so\``,
-      );
-    }
+// Check if the hello world BPF program has been deployed.
+export async function checkProgram(): Promise<void> {
   
-    // Check if the program has been deployed
-    const programInfo = await connection.getAccountInfo(programId);
-    if (programInfo === null) {
-      if (fs.existsSync(PROGRAM_SO_PATH)) {
-        throw new Error(
-          'Program needs to be deployed with `solana program deploy dist/program/helloworld.so`',
-        );
-      } else {
-        throw new Error('Program needs to be built and deployed');
-      }
-    } else if (!programInfo.executable) {
-      throw new Error(`Program is not executable`);
-    }
-    console.log(`Using program ${programId.toBase58()}`);
-  
-    // Derive the address (public key) of a greeting account from the program so that it's easy to find later.
-    const GREETING_SEED = 'hello';
-    greetedPubkey = await PublicKey.createWithSeed(
-      payer.publicKey,
-      GREETING_SEED,
-      programId,
+  // Read program id from keypair file.
+  try {
+    const programKeypair = await createKeypairFromFile(PROGRAM_KEYPAIR_PATH);
+    programId = programKeypair.publicKey;
+  } catch (err) {
+    const errMsg = (err as Error).message;
+    throw new Error(
+      `Failed to read program keypair at '${PROGRAM_KEYPAIR_PATH}' due to error: ${errMsg}. Program may need to be deployed with \`solana program deploy dist/program/helloworld.so\``,
     );
-  
-    // Check if the greeting account has already been created
-    const greetedAccount = await connection.getAccountInfo(greetedPubkey);
-    if (greetedAccount === null) {
-      console.log(
-        'Creating account',
-        greetedPubkey.toBase58(),
-        'to say hello to',
-      );
-      const lamports = await connection.getMinimumBalanceForRentExemption(
-        GREETING_SIZE,
-      );
-  
-      const transaction = new Transaction().add(
-        SystemProgram.createAccountWithSeed({
-          fromPubkey: payer.publicKey,
-          basePubkey: payer.publicKey,
-          seed: GREETING_SEED,
-          newAccountPubkey: greetedPubkey,
-          lamports,
-          space: GREETING_SIZE,
-          programId,
-        }),
-      );
-      await sendAndConfirmTransaction(connection, transaction, [payer]);
-    }
   }
+
+  // Check if the program has been deployed
+  const programInfo = await connection.getAccountInfo(programId);
+
+  if (programInfo === null) {
+    if (fs.existsSync(PROGRAM_SO_PATH)) {
+      throw new Error(
+        'Program needs to be deployed with `solana program deploy dist/program/helloworld.so`',
+      );
+    } else {
+      throw new Error('Program needs to be built and deployed');
+    }
+  } else if (!programInfo.executable) {
+    throw new Error(`Program is not executable`);
+  }
+
+  console.log(`Using program ${programId.toBase58()}`);
+
+  // Derive the address (public key) of a greeting account from the program so that it's easy to find later.
+  const GREETING_SEED = 'transference';
+  greetedPubkey = await PublicKey.createWithSeed(
+    payer.publicKey,
+    GREETING_SEED,
+    programId,
+  );
+
+  // Check if the greeting account has already been created.
+  const greetedAccount = await connection.getAccountInfo(greetedPubkey);
+
+  if (greetedAccount === null) {
+    
+    console.log(
+      'Creating account',
+      greetedPubkey.toBase58(),
+      'to transfer to',
+    );
+
+    const lamports = await connection.getMinimumBalanceForRentExemption(
+      GREETING_SIZE,
+    );
+
+    const transaction = new Transaction().add(
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: payer.publicKey,
+        basePubkey: payer.publicKey,
+        seed: GREETING_SEED,
+        newAccountPubkey: greetedPubkey,
+        lamports,
+        space: GREETING_SIZE,
+        programId,
+      }),
+    );
+
+    await sendAndConfirmTransaction(connection, transaction, [payer]);
+  
+  }
+
+}
   
   /**
    * Say hello
    */
+  // Transfer
   export async function transfer(): Promise<void> {
     console.log('Saying hello to', greetedPubkey.toBase58());
     const instruction = new TransactionInstruction({
