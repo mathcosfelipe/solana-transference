@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import os from 'os';
 import fs from 'mz/fs';
 import path from 'path';
@@ -9,8 +5,9 @@ import yaml from 'yaml';
 import {Keypair} from '@solana/web3.js';
 
 /**
- * @private
- */
+* @private
+*/
+
 async function getConfig(): Promise<any> {
   // Path to Solana CLI config file
   const CONFIG_FILE_PATH = path.resolve(
@@ -24,9 +21,7 @@ async function getConfig(): Promise<any> {
   return yaml.parse(configYml);
 }
 
-/**
- * Load and parse the Solana CLI config file to determine which RPC url to use
- */
+// Load and parse the Solana CLI config file to determine which RPC url to use.
 export async function getRpcUrl(): Promise<string> {
   try {
     const config = await getConfig();
@@ -40,9 +35,7 @@ export async function getRpcUrl(): Promise<string> {
   }
 }
 
-/**
- * Load and parse the Solana CLI config file to determine which payer to use
- */
+// Load and parse the Solana CLI config file to determine which payer to use.
 export async function getPayer(): Promise<Keypair> {
   try {
     const config = await getConfig();
@@ -56,9 +49,7 @@ export async function getPayer(): Promise<Keypair> {
   }
 }
 
-/**
- * Create a Keypair from a secret key stored in file as bytes' array
- */
+// Create a Keypair from a secret key stored in file as bytes' array
 export async function createKeypairFromFile(
   filePath: string,
 ): Promise<Keypair> {
