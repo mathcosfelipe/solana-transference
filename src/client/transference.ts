@@ -62,42 +62,40 @@ export async function establishConnection(): Promise<void> {
   console.log('Connection to cluster established:', rpcUrl, version);
 }
   
-  /**
-   * Establish an account to pay for everything
-   */
-  export async function establishPayer(): Promise<void> {
-    let fees = 0;
-    if (!payer) {
-      const {feeCalculator} = await connection.getRecentBlockhash();
-  
-      // Calculate the cost to fund the greeter account
-      fees += await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
-  
-      // Calculate the cost of sending transactions
-      fees += feeCalculator.lamportsPerSignature * 100; // wag
-  
-      payer = await getPayer();
-    }
-  
-    let lamports = await connection.getBalance(payer.publicKey);
-    if (lamports < fees) {
-      // If current balance is not enough to pay for fees, request an airdrop
-      const sig = await connection.requestAirdrop(
-        payer.publicKey,
-        fees - lamports,
-      );
-      await connection.confirmTransaction(sig);
-      lamports = await connection.getBalance(payer.publicKey);
-    }
-  
-    console.log(
-      'Using account',
-      payer.publicKey.toBase58(),
-      'containing',
-      lamports / LAMPORTS_PER_SOL,
-      'SOL to pay for fees',
-    );
+// Establish an account to pay for everything.
+export async function establishPayer(): Promise<void> {
+  let fees = 0;
+  if (!payer) {
+    const {feeCalculator} = await connection.getRecentBlockhash();
+
+    // Calculate the cost to fund the greeter account
+    fees += await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
+
+    // Calculate the cost of sending transactions
+    fees += feeCalculator.lamportsPerSignature * 100; // wag
+
+    payer = await getPayer();
   }
+
+  let lamports = await connection.getBalance(payer.publicKey);
+  if (lamports < fees) {
+    // If current balance is not enough to pay for fees, request an airdrop
+    const sig = await connection.requestAirdrop(
+      payer.publicKey,
+      fees - lamports,
+    );
+    await connection.confirmTransaction(sig);
+    lamports = await connection.getBalance(payer.publicKey);
+  }
+
+  console.log(
+    'Using account',
+    payer.publicKey.toBase58(),
+    'containing',
+    lamports / LAMPORTS_PER_SOL,
+    'SOL to pay for fees',
+  );
+}
   
   /**
    * Check if the hello world BPF program has been deployed
