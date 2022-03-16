@@ -170,47 +170,45 @@ export async function checkProgram(): Promise<void> {
 
 }
   
-  /**
-   * Say hello
-   */
-  // Transfer
-  export async function transfer(): Promise<void> {
-    console.log('Saying hello to', greetedPubkey.toBase58());
-    const instruction = new TransactionInstruction({
-      // Se sai da conta, é necessário assinar
-      // O primeiro elemento envia e o segundo recebe
-      keys: [{pubkey: payer.publicKey, isSigner: true, isWritable: true}, 
-             {pubkey: new PublicKey('59uUFzdT3TbURiFua6TrTXhrWacLfbjrvPY7h9Ng9Fe7'), isSigner: false, isWritable: true},
-             {pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false},
-            ],
-      programId,
-      data: Buffer.alloc(0), // All instructions are hellos
-    });
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(instruction),
-      [payer],
-    );
-  }
+// Transfer
+export async function transfer(): Promise<void> {
+  
+  console.log('Transfering to', greetedPubkey.toBase58());
+  
+  const instruction = new TransactionInstruction({
+    keys: [{pubkey: payer.publicKey, isSigner: true, isWritable: true}, 
+            {pubkey: new PublicKey('59uUFzdT3TbURiFua6TrTXhrWacLfbjrvPY7h9Ng9Fe7'), isSigner: false, isWritable: true},
+            {pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false},
+          ],
+    programId,
+    data: Buffer.alloc(0),
+  });
+  
+  await sendAndConfirmTransaction(
+    connection,
+    new Transaction().add(instruction),
+    [payer],
+  );
+
+}
   
   /**
    * Report the number of times the greeted account has been said hello to
    */
-  export async function reportGreetings(): Promise<void> {
-    const accountInfo = await connection.getAccountInfo(greetedPubkey);
-    if (accountInfo === null) {
-      throw 'Error: cannot find the greeted account';
-    }
-    const greeting = borsh.deserialize(
-      GreetingSchema,
-      GreetingAccount,
-      accountInfo.data,
-    );
-    console.log(
-      greetedPubkey.toBase58(),
-      'has been greeted',
-      greeting.counter,
-      'time(s)',
-    );
+export async function reportGreetings(): Promise<void> {
+  const accountInfo = await connection.getAccountInfo(greetedPubkey);
+  if (accountInfo === null) {
+    throw 'Error: cannot find the greeted account';
   }
-  
+  const greeting = borsh.deserialize(
+    GreetingSchema,
+    GreetingAccount,
+    accountInfo.data,
+  );
+  console.log(
+    greetedPubkey.toBase58(),
+    'has been greeted',
+    greeting.counter,
+    'time(s)',
+  );
+}
