@@ -192,24 +192,26 @@ export async function transfer(): Promise<void> {
 
 }
   
-  /**
-   * Report the number of times the greeted account has been said hello to
-   */
-// Report the number of times the greeted account has been said hello to.
+// Report the number of times the account that received the money received the transfer.
 export async function reportGreetings(): Promise<void> {
+  
   const accountInfo = await connection.getAccountInfo(greetedPubkey);
+  
   if (accountInfo === null) {
     throw 'Error: cannot find the greeted account';
   }
+  
   const greeting = borsh.deserialize(
     GreetingSchema,
     GreetingAccount,
     accountInfo.data,
   );
+  
   console.log(
     greetedPubkey.toBase58(),
-    'has been greeted',
+    'there was the transfer',
     greeting.counter,
     'time(s)',
   );
+
 }
